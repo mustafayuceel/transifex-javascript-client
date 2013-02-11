@@ -1,0 +1,42 @@
+curl -i -L --user gccster:test -X GET \
+https://www.transifex.com/api/2/projects/
+
+
+
+curl -i -L --user gccster:test -X GET http://www.transifex.com/api/2/project/demoproject1/resource/test/translation/el/strings/?details\&key=result
+
+curl -i -L --user gccster:test -X GET http://www.transifex.com/api/2/project/transifex/
+
+
+
+curl -i -L --user gccster:test -X GET http://www.transifex.com/api/2/project/demoproject1/resource/test/translation/el/string/bff3b5b0513a5e4821f649ffcca93069/
+
+curl -i -L --user gccster:test -X PUT -H "Content-Type: application/json" --data '{"translation": "nick"}' http://www.transifex.com/api/2/project/demoproject1/resource/test/translation/el/string/bff3b5b0513a5e4821f649ffcca93069/
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+---fixed
+curl -i -L --user gccster:test -X GET http://www.transifex.com/api/2/project/demoproject1/?details
+
+curl -L --user gccster:test -X GET http://www.transifex.com/api/2/project/demoproject1/resource/test/translation/el/strings
+
+curl -i -L --user gccster:test -X PUT -H "Content-Type: application/json" --data '{"translation": "nick"}' http://www.transifex.com/api/2/project/demoproject1/resource/test/translation/el/string/bff3b5b0513a5e4821f649ffcca93069/
+
+string:
+'key1','key2','context1','context2'
+a=utf8encode(key1:key2:context1:context2)
+hexdigest(md5(a)) 

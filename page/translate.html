@@ -1,0 +1,18 @@
+<link rel="stylesheet" href="stylesheet/stylesheet.css" />
+<link rel="stylesheet" href="stylesheet/jquery.mobile-1.1.1.min.css" />
+<script src="stylesheet/jquery-1.7.1.min.js"></script>
+<script src="stylesheet/jquery.mobile-1.1.1.min.js"></script>
+<div id="container2">
+		<label for="sourceString">Source String:</label>
+		<textarea name="sourceString" id="sourceString"></textarea>
+		<label for="translation">Translation:</label>
+		<textarea name="translation" id="translation"></textarea>
+		<div style="float: left;"> 
+		<a onclick="translateS(strings[stringNumber].source_string,selectedResourceLocale+'|'+selectedLocale)" data-role="button" data-inline="true" data-mini="true">Suggest</a>
+		<a onclick="commit(document.getElementById('translation').value)" data-role="button" data-inline="true" data-mini="true">Commit</a>
+		</div>
+		<div style="float: right;">
+			<a onclick="stringNumber--; navigate('translate')" data-role="button" data-inline="true" data-mini="true">Previous</a>
+			<a onclick="stringNumber++; navigate('translate')" data-role="button" data-inline="true" data-mini="true">Next</a>
+		</div>
+</div>

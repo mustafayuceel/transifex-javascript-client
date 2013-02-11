@@ -1,0 +1,156 @@
+<!DOCTYPE html> 
+<html> 
+	<head> 
+	<title>m.Transifex</title> 
+	<meta name="viewport" content="width=device-width, initial-scale=1"> 
+	<link rel="stylesheet" href="stylesheet/stylesheet.css" />
+	<link rel="stylesheet" href="stylesheet/jquery.mobile-1.1.1.min.css" />
+	<script src="stylesheet/jquery-1.7.1.min.js"></script>
+	<script src="stylesheet/jquery.mobile-1.1.1.min.js"></script>
+</head> 
+<body> 
+
+<div id="mobileScreen">
+	<div data-role="page">
+	
+		<div data-role="header">
+			<h1>m.Transifex</h1>
+		</div><!-- /header -->
+		
+		<div id="content" data-role="content">	
+					
+		</div><!-- /content -->
+	
+	</div><!-- /page -->
+</div>
+
+<script type="text/javascript" >
+	
+	username='';
+	password='';
+	projectSlug='';
+	selectedLocale='';
+	selectedResource ='';
+	selectedRecourceLocale = '';
+	project = new Object;
+	strings = new Object;
+	stringNumber = 0;
+	
+	//translate('car','en|el');
+	
+	navigate('login');
+	function navigate(page){
+		switch(page){
+			case 'login':
+				$("#content").load('page/login.html');
+				break;
+			case 'locale':
+				username = document.getElementById('username').value;
+				password = document.getElementById('password').value;
+				projectSlug = document.getElementById('projectSlug').value;
+				$.ajax({
+					url: 'curl.php',
+					type: 'POST',
+					data: { cmd: '--user '+username+':'+password+' -X GET http://www.transifex.com/api/2/project/'+projectSlug+'/?details'},
+					success: function(result){
+						//alert(result);
+						project = eval ("(" + result + ")");
+						//alert(project.teams[0]);
+						$("#content").load('page/locale.html',function(){
+							$.each(project.teams,function(key,value){
+								$("#locale").append('<li data-icon="arrow-r"><a onclick="selectedLocale = \''+value+'\'; navigate(\'resource\');">'+value+'</a></li>');						
+							});						
+						});
+					},
+				});
+				//alert(username+password+projectSlug);
+				break;
+			case 'resource':
+				//alert(selectedLocale);
+				//alert(project.resources[0]['slug']);
+				$("#content").load('page/resource.html',function(){
+					$.each(project.resources,function(key,value){
+						$("#resource").append('<li data-icon="arrow-r"><a onclick="selectedResource = \''+value['slug']+'\'; navigate(\'translate\');">'+value['slug']+'</a></li>');												
+					});				
+				});
+				break;
+			case 'translate':
+				//alert(selectedResource);
+				$.ajax({
+					url: 'curl.php',
+					type: 'POST',
+					data: { cmd: '-L --user '+username+':'+password+' -X GET	http://www.transifex.com/api/2/project/'+projectSlug+'/resource/'+selectedResource},
+					success: function(result){
+						//alert(result);
+						selectedResourceLocale = eval ("(" + result + ")").source_language_code;
+						//alert(selectedResourceLocale);
+										
+						$.ajax({
+							url: 'curl.php',
+							type: 'POST',
+							data: { cmd: '-L --user '+username+':'+password+' -X GET	http://www.transifex.com/api/2/project/'+projectSlug+'/resource/'+selectedResource+'/translation/'+selectedLocale+'/strings'},
+							success: function(result){
+								//alert(result);
+								strings = eval ("(" + result + ")");
+								//alert(strings[0].key);
+								if(strings.length <= stringNumber)
+									stringNumber=0;
+								if(stringNumber<0)
+									stringNumber = strings.length-1;  
+								$("#content").load('page/translate.html',function(){
+									$("#sourceString").append(strings[stringNumber].source_string);
+									$("#translation").append(strings[stringNumber].translation);
+								});
+							},			
+						});		
+						
+					},			
+				});
+				break;
+		}
+	}
+	
+	function translateS(string,lang){
+		$.ajax({
+			url: 'translate.php',
+			type: 'POST',
+			data: { string: string, lang: lang},
+			success: function(result){
+				//alert(result);
+				$("#translation").html(result);
+			},
+		});
+	}
+	
+	function commit(translation){
+		var hash;
+		if(strings[stringNumber].key instanceof Array)
+			hash = strings[stringNumber].key.join(':');
+		else
+			hash = strings[stringNumber].key;
+		if(strings[stringNumber].context instanceof Array)
+			hash = hash+':'+strings[stringNumber].context.join(':');
+		else
+			hash = hash+':'+strings[stringNumber].context;
+		//alert(hash);
+		$.ajax({
+			url: 'hash.php',
+			type: 'POST',
+			data: { string: hash},
+			success: function(result){
+				//alert(result);
+				$.ajax({
+					url: 'curl.php',
+					type: 'POST',
+					data: { cmd: '-L --user '+username+':'+password+' -X PUT -H "Content-Type: application/json" --data \'{"translation": "'+translation+'"}\' http://www.transifex.com/api/2/project/'+projectSlug+'/resource/'+selectedResource+'/translation/'+selectedLocale+'/string/'+result+'/ '},
+					success: function(result){
+						alert(result);
+					},
+				});
+			},
+		});
+	}
+</script>
+
+</body>
+</html>
